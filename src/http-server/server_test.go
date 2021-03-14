@@ -7,6 +7,20 @@ import (
 	"testing"
 )
 
+type StubPlayerStore struct {
+	scores   map[string]int
+	winCalls []string
+}
+
+func (s *StubPlayerStore) GetPlayerScore(name string) (int, bool) {
+	score, found := s.scores[name]
+	return score, found
+}
+
+func (s *StubPlayerStore) RecordWin(name string) {
+	s.winCalls = append(s.winCalls, name)
+}
+
 func TestGETPlayers(t *testing.T) {
 	store := StubPlayerStore{
 		map[string]int{
@@ -80,20 +94,6 @@ func TestStoreWins(t *testing.T) {
 			t.Errorf("did not store the correct winner, got %q, want %q", store.winCalls[0], player)
 		}
 	})
-}
-
-type StubPlayerStore struct {
-	scores   map[string]int
-	winCalls []string
-}
-
-func (s *StubPlayerStore) GetPlayerScore(name string) (int, bool) {
-	score, found := s.scores[name]
-	return score, found
-}
-
-func (s *StubPlayerStore) RecordWin(name string) {
-	s.winCalls = append(s.winCalls, name)
 }
 
 func newGetScoreRequest(name string) *http.Request {
