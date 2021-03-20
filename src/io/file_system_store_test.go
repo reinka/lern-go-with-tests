@@ -1,14 +1,14 @@
 package main
 
 import (
-	"strings"
 	"testing"
 )
 
 func TestFileSystemStore(t *testing.T) {
-	database := strings.NewReader(`[
+	database, removeTmpFile := createTempFile(t, `[
             {"Name": "Cleo", "Wins": 10},
             {"Name": "Chris", "Wins": 33}]`)
+	defer removeTmpFile()
 	store := FileSystemPlayerStore{database}
 
 	t.Run("league from a reader", func(t *testing.T) {
@@ -29,9 +29,13 @@ func TestFileSystemStore(t *testing.T) {
 
 	t.Run("get score", func(t *testing.T) {
 		got, _ := store.GetPlayerScore("Chris")
-
 		assertStoreEquals(t, got, 33)
+	})
 
+	t.Run("store win", func(t *testing.T) {
+		store.RecordWin("Chris")
+		got, _ := store.GetPlayerScore("Chris")
+		assertStoreEquals(t, got, 34)
 	})
 }
 

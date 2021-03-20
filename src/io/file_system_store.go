@@ -1,15 +1,19 @@
 package main
 
 import (
+	"encoding/json"
 	"io"
+	"io/ioutil"
+	"os"
+	"testing"
 )
 
 type FileSystemPlayerStore struct {
-	database io.ReadSeeker
+	database io.ReadWriteSeeker
 }
 
 // GetLeague loads the JSON data from database and returns it
-func (f *FileSystemPlayerStore) GetLeague() []Player {
+func (f *FileSystemPlayerStore) GetLeague() League {
 	_, _ = f.database.Seek(0, io.SeekStart)
 	league, _ := LoadLeague(f.database)
 	return league
@@ -18,16 +22,45 @@ func (f *FileSystemPlayerStore) GetLeague() []Player {
 // FileSystemPlayerStore checks if name contains any entries
 // and returns (Wins, true) if so, else (0, false)
 func (f *FileSystemPlayerStore) GetPlayerScore(name string) (int, bool) {
-	var wins int
-	found := false
+	player := f.GetLeague().Find(name)
 
-	for _, player := range f.GetLeague() {
-		if player.Name == name {
-			found = true
-			wins = player.Wins
-			break
-		}
+	if player != nil {
+		return player.Wins, true
 	}
 
-	return wins, found
+	return 0, false
+}
+
+// RecordWin increaments the Wins counter of a Player if it exists
+// else it adds a new Player with Wins == 1. Additionally, it updates
+// the league of the Player
+func (f *FileSystemPlayerStore) RecordWin(name string) {
+	league := f.GetLeague()
+	player := league.Find(name)
+	if player != nil {
+		player.Wins++
+	}
+
+	f.database.Seek(0, 0)
+	json.NewEncoder(f.database).Encode(league)
+}
+
+// createTempFile creates a temporary file under the default TempFile
+// directory and returns it, together with a clean-up function
+func createTempFile(t testing.TB, initialData string) (io.ReadWriteSeeker, func()) {
+	t.Helper()
+
+	tmpfile, err := ioutil.TempFile("", "db")
+	if err != nil {
+		t.Fatalf("could not create temp file %v", err)
+	}
+
+	tmpfile.Write([]byte(initialData))
+
+	removeFile := func() {
+		tmpfile.Close()
+		os.Remove(tmpfile.Name())
+	}
+
+	return tmpfile, removeFile
 }
