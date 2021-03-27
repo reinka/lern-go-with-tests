@@ -14,8 +14,8 @@ type FileSystemPlayerStore struct {
 
 // GetLeague loads the JSON data from database and returns it
 func (f *FileSystemPlayerStore) GetLeague() League {
-	_, _ = f.database.Seek(0, io.SeekStart)
-	league, _ := LoadLeague(f.database)
+	_, _ = f.database.Seek(0, 0)
+	league, _ := NewLeague(f.database)
 	return league
 }
 

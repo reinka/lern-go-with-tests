@@ -19,12 +19,13 @@ func (l League) Find(name string) *Player {
 	return nil
 }
 
-// LoadLegaue loads a league from JSON
-func LoadLeague(rdr io.Reader) (League, error) {
-	var league League
+// NewLeague constructs a new league object and returns it with an err, if any
+func NewLeague(rdr io.Reader) ([]Player, error) {
+	var league []Player
 	err := json.NewDecoder(rdr).Decode(&league)
 	if err != nil {
 		err = fmt.Errorf("problem parsing league, %v", err)
 	}
+
 	return league, err
 }
