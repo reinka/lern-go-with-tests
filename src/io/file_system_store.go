@@ -2,14 +2,13 @@ package main
 
 import (
 	"encoding/json"
-	"io"
 	"io/ioutil"
 	"os"
 	"testing"
 )
 
 type FileSystemPlayerStore struct {
-	database io.Writer
+	database *json.Encoder
 	league   League
 }
 
@@ -18,7 +17,7 @@ func NewFileSystemPlayerStore(file *os.File) *FileSystemPlayerStore {
 	league, _ := NewLeague(file)
 
 	return &FileSystemPlayerStore{
-		database: &tape{file},
+		database: json.NewEncoder(&tape{file}),
 		league:   league,
 	}
 }
@@ -51,7 +50,7 @@ func (f *FileSystemPlayerStore) RecordWin(name string) {
 		f.league = append(f.league, Player{name, 1})
 	}
 
-	_ = json.NewEncoder(f.database).Encode(f.league)
+	_ = f.database.Encode(f.league)
 }
 
 // createTempFile creates a temporary file under the default TempFile
