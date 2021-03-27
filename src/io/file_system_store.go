@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"sort"
 	"testing"
 )
 
@@ -13,7 +14,7 @@ type FileSystemPlayerStore struct {
 	league   League
 }
 
-//NewFileSystemPlayerStore creates a new FileSystemPlayerStore and returns a
+// NewFileSystemPlayerStore creates a new FileSystemPlayerStore and returns a
 // pointer to it and an error, if any
 func NewFileSystemPlayerStore(file *os.File) (*FileSystemPlayerStore, error) {
 	err := initialisePlayerDBFile(file)
@@ -36,8 +37,8 @@ func NewFileSystemPlayerStore(file *os.File) (*FileSystemPlayerStore, error) {
 	}, err
 }
 
-//initialisePlayerDBFile initialises a Player DB file
-//and returns an error, if any
+// initialisePlayerDBFile initialises a Player DB file
+// and returns an error, if any
 func initialisePlayerDBFile(file *os.File) error {
 	_, err := file.Seek(0, 0)
 
@@ -61,8 +62,13 @@ func initialisePlayerDBFile(file *os.File) error {
 	return nil
 }
 
-// GetLeague loads the JSON data from database and returns it
+// GetLeague loads the JSON data from database, sorts its
+// entries by their scores, from highest to lowest, and returns it
 func (f *FileSystemPlayerStore) GetLeague() League {
+	sort.Slice(f.league, func(i, j int) bool {
+		return f.league[i].Wins > f.league[j].Wins
+	})
+
 	return f.league
 }
 
