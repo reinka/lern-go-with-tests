@@ -7,7 +7,7 @@ import (
 )
 
 func TestRecordingWinsAndRetrievingThem(t *testing.T) {
-	database, removeTmpFile := createTempFile(t, `[]`)
+	database, removeTmpFile := createTempFile(t, "")
 	defer removeTmpFile()
 	store, err := NewFileSystemPlayerStore(database)
 

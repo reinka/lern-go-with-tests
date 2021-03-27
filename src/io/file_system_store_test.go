@@ -5,10 +5,10 @@ import (
 )
 
 func TestFileSystemStore(t *testing.T) {
-	database, removeTmpFile := createTempFile(t, `[
+	database, cleanDatabase := createTempFile(t, `[
             {"Name": "Cleo", "Wins": 10},
             {"Name": "Chris", "Wins": 33}]`)
-	defer removeTmpFile()
+	defer cleanDatabase()
 	store, err := NewFileSystemPlayerStore(database)
 
 	assertNoError(t, err)
@@ -44,6 +44,15 @@ func TestFileSystemStore(t *testing.T) {
 		store.RecordWin("Shibe")
 		got, _ := store.GetPlayerScore("Shibe")
 		assertScoreEquals(t, got, 1)
+	})
+
+	t.Run("works with an empty file", func(t *testing.T) {
+		database, cleanDatabase := createTempFile(t, "")
+		defer cleanDatabase()
+
+		_, err := NewFileSystemPlayerStore(database)
+
+		assertNoError(t, err)
 	})
 }
 
