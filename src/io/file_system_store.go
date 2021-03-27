@@ -10,19 +10,28 @@ import (
 
 type FileSystemPlayerStore struct {
 	database io.ReadWriteSeeker
+	league   League
+}
+
+func NewFileSystemPlayerStore(database io.ReadWriteSeeker) *FileSystemPlayerStore {
+	_, _ = database.Seek(0, 0)
+	league, _ := NewLeague(database)
+
+	return &FileSystemPlayerStore{
+		database: database,
+		league:   league,
+	}
 }
 
 // GetLeague loads the JSON data from database and returns it
 func (f *FileSystemPlayerStore) GetLeague() League {
-	_, _ = f.database.Seek(0, 0)
-	league, _ := NewLeague(f.database)
-	return league
+	return f.league
 }
 
 // FileSystemPlayerStore checks if name contains any entries
 // and returns (Wins, true) if so, else (0, false)
 func (f *FileSystemPlayerStore) GetPlayerScore(name string) (int, bool) {
-	player := f.GetLeague().Find(name)
+	player := f.league.Find(name)
 
 	if player != nil {
 		return player.Wins, true
@@ -35,16 +44,15 @@ func (f *FileSystemPlayerStore) GetPlayerScore(name string) (int, bool) {
 // else it adds a new Player with Wins == 1. Additionally, it updates
 // the league of the Player
 func (f *FileSystemPlayerStore) RecordWin(name string) {
-	league := f.GetLeague()
-	player := league.Find(name)
+	player := f.league.Find(name)
 	if player != nil {
 		player.Wins++
 	} else {
-		league = append(league, Player{name, 1})
+		f.league = append(f.league, Player{name, 1})
 	}
 
 	_, _ = f.database.Seek(0, 0)
-	_ = json.NewEncoder(f.database).Encode(league)
+	_ = json.NewEncoder(f.database).Encode(f.league)
 }
 
 // createTempFile creates a temporary file under the default TempFile
