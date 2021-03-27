@@ -39,10 +39,12 @@ func (f *FileSystemPlayerStore) RecordWin(name string) {
 	player := league.Find(name)
 	if player != nil {
 		player.Wins++
+	} else {
+		league = append(league, Player{name, 1})
 	}
 
-	f.database.Seek(0, 0)
-	json.NewEncoder(f.database).Encode(league)
+	_, _ = f.database.Seek(0, 0)
+	_ = json.NewEncoder(f.database).Encode(league)
 }
 
 // createTempFile creates a temporary file under the default TempFile
@@ -55,11 +57,11 @@ func createTempFile(t testing.TB, initialData string) (io.ReadWriteSeeker, func(
 		t.Fatalf("could not create temp file %v", err)
 	}
 
-	tmpfile.Write([]byte(initialData))
+	_, _ = tmpfile.Write([]byte(initialData))
 
 	removeFile := func() {
-		tmpfile.Close()
-		os.Remove(tmpfile.Name())
+		_ = tmpfile.Close()
+		_ = os.Remove(tmpfile.Name())
 	}
 
 	return tmpfile, removeFile

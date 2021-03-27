@@ -29,17 +29,23 @@ func TestFileSystemStore(t *testing.T) {
 
 	t.Run("get score", func(t *testing.T) {
 		got, _ := store.GetPlayerScore("Chris")
-		assertStoreEquals(t, got, 33)
+		assertScoreEquals(t, got, 33)
 	})
 
 	t.Run("store win", func(t *testing.T) {
 		store.RecordWin("Chris")
 		got, _ := store.GetPlayerScore("Chris")
-		assertStoreEquals(t, got, 34)
+		assertScoreEquals(t, got, 34)
+	})
+
+	t.Run("store wins for new player", func(t *testing.T) {
+		store.RecordWin("Shibe")
+		got, _ := store.GetPlayerScore("Shibe")
+		assertScoreEquals(t, got, 1)
 	})
 }
 
-func assertStoreEquals(t testing.TB, got, want int) {
+func assertScoreEquals(t testing.TB, got, want int) {
 	t.Helper()
 	if got != want {
 		t.Fatalf("got %d want %d", got, want)
