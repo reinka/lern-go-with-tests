@@ -1,27 +1,20 @@
 package main
 
 import (
+	"github.com/reinka/lern-go-with-tests/src/command-line"
 	"log"
 	"net/http"
-	"os"
-
-	"github.com/reinka/lern-go-with-tests/src/command-line"
 )
 
 const dbFileName = "game.db.json"
 
 func main() {
-	db, err := os.OpenFile(dbFileName, os.O_RDWR|os.O_CREATE, 0666)
+	store, closeFn, err := poker.FileSystemPlayerStoreFromFile(dbFileName)
 
 	if err != nil {
-		log.Fatalf("problem opening %s %v", dbFileName, err)
+		log.Fatal(err)
 	}
-
-	store, err := poker.NewFileSystemPlayerStore(db)
-
-	if err != nil {
-		log.Fatalf("problem creating file system player store, %v ", err)
-	}
+	defer closeFn()
 
 	server := poker.NewPlayerServer(store)
 

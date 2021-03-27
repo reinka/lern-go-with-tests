@@ -10,26 +10,6 @@ import (
 	"testing"
 )
 
-type StubPlayerStore struct {
-	scores   map[string]int
-	winCalls []string
-	league   []Player
-}
-
-func (s *StubPlayerStore) GetPlayerScore(name string) (int, bool) {
-	score, found := s.scores[name]
-	return score, found
-}
-
-func (s *StubPlayerStore) RecordWin(name string) {
-	s.winCalls = append(s.winCalls, name)
-	s.scores[name]++
-}
-
-func (s *StubPlayerStore) GetLeague() League {
-	return s.league
-}
-
 func TestGETPlayers(t *testing.T) {
 	store := StubPlayerStore{
 		map[string]int{
@@ -98,12 +78,12 @@ func TestStoreWins(t *testing.T) {
 		server.ServeHTTP(response, request)
 
 		assertStatus(t, response.Code, http.StatusAccepted)
-		if len(store.winCalls) != 1 {
-			t.Errorf("got %d calls to RecordWin, want %d", len(store.winCalls), 1)
+		if len(store.WinCalls) != 1 {
+			t.Errorf("got %d calls to RecordWin, want %d", len(store.WinCalls), 1)
 		}
 
-		if store.winCalls[0] != player {
-			t.Errorf("did not store the correct winner, got %q, want %q", store.winCalls[0], player)
+		if store.WinCalls[0] != player {
+			t.Errorf("did not store the correct winner, got %q, want %q", store.WinCalls[0], player)
 		}
 	})
 
@@ -137,8 +117,8 @@ func TestStoreWins(t *testing.T) {
 
 		assertStatus(t, response.Code, http.StatusOK)
 
-		if len(store.winCalls) != wantedWins {
-			t.Errorf("got %d winCalls, want %d", len(store.winCalls), wantedWins)
+		if len(store.WinCalls) != wantedWins {
+			t.Errorf("got %d WinCalls, want %d", len(store.WinCalls), wantedWins)
 		}
 	})
 }
