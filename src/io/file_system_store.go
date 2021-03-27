@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -12,14 +13,22 @@ type FileSystemPlayerStore struct {
 	league   League
 }
 
-func NewFileSystemPlayerStore(file *os.File) *FileSystemPlayerStore {
+//NewFileSystemPlayerStore creates a new FileSystemPlayerStore and returns a
+// pointer to it and an error, if any
+func NewFileSystemPlayerStore(file *os.File) (*FileSystemPlayerStore, error) {
 	_, _ = file.Seek(0, 0)
-	league, _ := NewLeague(file)
+	league, err := NewLeague(file)
+
+	if err != nil {
+		return nil, fmt.Errorf(
+			"problem loading player store from file %s, %v",
+			file.Name(), err)
+	}
 
 	return &FileSystemPlayerStore{
 		database: json.NewEncoder(&tape{file}),
 		league:   league,
-	}
+	}, err
 }
 
 // GetLeague loads the JSON data from database and returns it
