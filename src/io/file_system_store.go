@@ -13,12 +13,12 @@ type FileSystemPlayerStore struct {
 	league   League
 }
 
-func NewFileSystemPlayerStore(database io.ReadWriteSeeker) *FileSystemPlayerStore {
-	_, _ = database.Seek(0, 0)
-	league, _ := NewLeague(database)
+func NewFileSystemPlayerStore(file *os.File) *FileSystemPlayerStore {
+	_, _ = file.Seek(0, 0)
+	league, _ := NewLeague(file)
 
 	return &FileSystemPlayerStore{
-		database: &tape{database},
+		database: &tape{file},
 		league:   league,
 	}
 }
@@ -56,7 +56,7 @@ func (f *FileSystemPlayerStore) RecordWin(name string) {
 
 // createTempFile creates a temporary file under the default TempFile
 // directory and returns it, together with a clean-up function
-func createTempFile(t testing.TB, initialData string) (io.ReadWriteSeeker, func()) {
+func createTempFile(t testing.TB, initialData string) (*os.File, func()) {
 	t.Helper()
 
 	tmpfile, err := ioutil.TempFile("", "db")
